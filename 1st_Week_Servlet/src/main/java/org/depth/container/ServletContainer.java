@@ -27,23 +27,11 @@ public class ServletContainer {
   private AtomicBoolean running = new AtomicBoolean(false);
   private Thread serverThread;
 
-  /**
-   * 서블릿 컨테이너에 서블릿을 등록합니다.
-   *
-   * @param path    서블릿 매핑 경로
-   * @param servlet 등록할 서블릿 인스턴스
-   */
   public void addServlet(String path, Servlet servlet) {
     servletMap.put(path, servlet);
     servlet.init();
   }
 
-  /**
-   * 서블릿 컨테이너에서 서블릿을 제거합니다.
-   *
-   * @param path 제거할 서블릿 매핑 경로
-   * @return 제거된 서블릿 (없을 경우 null)
-   */
   public Servlet removeServlet(String path) {
     Servlet servlet = servletMap.remove(path);
     if (servlet != null) {
@@ -52,9 +40,7 @@ public class ServletContainer {
     return servlet;
   }
 
-  /**
-   * 서블릿 컨테이너를 시작합니다.
-   */
+
   public void start() {
     if (running.get()) {
       return; // 이미 실행중이면 무시
@@ -86,9 +72,7 @@ public class ServletContainer {
     serverThread.start();
   }
 
-  /**
-   * 서블릿 컨테이너를 중지합니다.
-   */
+
   public void stop() {
     if (!running.get()) {
       return; // 이미 중지되었으면 무시
@@ -109,9 +93,7 @@ public class ServletContainer {
     System.out.println("서블릿 컨테이너가 중지되었습니다.");
   }
 
-  /**
-   * 클라이언트 요청을 처리합니다.
-   */
+
   private void handleRequest(Socket clientSocket) {
     try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         OutputStream outputStream = clientSocket.getOutputStream()) {
@@ -159,9 +141,7 @@ public class ServletContainer {
     }
   }
 
-  /**
-   * 요청 경로에 맞는 서블릿을 찾습니다.
-   */
+
   private Servlet findServletForPath(String path) {
     // 정확히 일치하는 경로가 있는지 확인
     if (servletMap.containsKey(path)) {
@@ -189,9 +169,7 @@ public class ServletContainer {
     return bestMatch.isEmpty() ? null : servletMap.get(bestMatch);
   }
 
-  /**
-   * 서버 소켓을 안전하게 닫습니다.
-   */
+
   private void closeServerSocket() {
     if (serverSocket != null && !serverSocket.isClosed()) {
       try {
@@ -202,9 +180,6 @@ public class ServletContainer {
     }
   }
 
-  /**
-   * 서블릿 컨테이너가 실행 중인지 확인합니다.
-   */
   public boolean isRunning() {
     return running.get();
   }
