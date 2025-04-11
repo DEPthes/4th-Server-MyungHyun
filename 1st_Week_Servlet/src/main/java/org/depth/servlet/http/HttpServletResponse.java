@@ -1,12 +1,21 @@
 package org.depth.servlet.http;
 
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.depth.http.HttpResponse;
 import org.depth.http.model.HttpHeader;
 import org.depth.servlet.ServletResponse;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+@SuperBuilder
+@Data
 public class HttpServletResponse extends HttpResponse implements ServletResponse {
     @Override
     public byte[] getContent() {
@@ -41,7 +50,8 @@ public class HttpServletResponse extends HttpResponse implements ServletResponse
                 }
             }
             case "body" -> this.setBody((String) value);
-        };
+        }
+        ;
     }
 
     @Override

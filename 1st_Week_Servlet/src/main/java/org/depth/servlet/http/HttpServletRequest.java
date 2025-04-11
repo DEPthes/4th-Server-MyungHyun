@@ -1,13 +1,22 @@
 package org.depth.servlet.http;
 
+import lombok.EqualsAndHashCode;
 import org.depth.http.HttpRequest;
 import org.depth.http.model.HttpHeader;
 import org.depth.servlet.ServletRequest;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
+@AllArgsConstructor
+@Data
+@SuperBuilder
 public class HttpServletRequest extends HttpRequest implements ServletRequest {
     @Override
     public Object getAttribute(String name) {

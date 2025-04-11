@@ -1,32 +1,19 @@
 package org.depth.servlet.http;
 
 import org.depth.servlet.Servlet;
-import org.depth.servlet.ServletConfig;
 import org.depth.servlet.ServletRequest;
 import org.depth.servlet.ServletResponse;
 
 
-public abstract class HttpServlet implements Servlet, ServletConfig {
-    private ServletConfig config;
-    
+public abstract class HttpServlet implements Servlet {
     @Override
-    public void init(ServletConfig config) {
-        this.config = config;
+    public void init() {
+
     }
 
     @Override
     public void destroy() {
         // 해제할 리소스가 있을시 해제
-    }
-
-    @Override
-    public String getServletName() {
-        return config.getServletName();
-    }
-
-    @Override
-    public String getServletPath() {
-        return config.getServletPath();
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) {
