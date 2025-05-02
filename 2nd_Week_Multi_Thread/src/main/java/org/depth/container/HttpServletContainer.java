@@ -1,21 +1,26 @@
 package org.depth.container;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.depth.container.filter.Filter;
+import org.depth.container.filter.FilterChain;
 import org.depth.container.request.HttpRequestHandler;
 import org.depth.servlet.http.HttpServlet;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-
 
 public class HttpServletContainer implements Runnable {
     private final PathRoutingServletMap servletMap;
     private final HttpRequestHandler httpRequestHandler;
     private final ExecutorService executorService;
+    @Getter
+    private final List<Filter> filters = new ArrayList<>();
     private int port;
     private volatile boolean isRunning = false;
     private ServerSocket serverSocket;
@@ -30,15 +35,25 @@ public class HttpServletContainer implements Runnable {
         this.servletMap.remove(servlet.getServletPath());
     }
 
+    public void registerFilter(Filter filter) {
+        filter.init();
+        this.filters.add(filter);
+    }
+
+    public void unregisterFilter(Filter filter) {
+        filter.destroy();
+        this.filters.remove(filter);
+    }
+
     public HttpServletContainer() {
         this.servletMap = new PathRoutingServletMap();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap);
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters);
         this.executorService = java.util.concurrent.Executors.newFixedThreadPool(10);
     }
 
     public HttpServletContainer(ExecutorService executorService) {
         this.servletMap = new PathRoutingServletMap();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap);
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters);
         this.executorService = executorService;
     }
 
