@@ -22,61 +22,18 @@ public class HttpServletContainer implements Runnable {
     private final PathRoutingServletMap servletMap;
     private final HttpRequestHandler httpRequestHandler;
     private final ExecutorService executorService;
+
     @Getter
     private final List<Filter> filters = new ArrayList<>();
+
     @Getter
     private final SessionManager sessionManager;
+
+    // 내부 상태
     private int port;
     private volatile boolean isRunning = false;
     private ServerSocket serverSocket;
 
-    public void registerServlet(HttpServlet servlet) {
-        servlet.init();
-        this.servletMap.put(servlet.getServletPath(), servlet);
-    }
-
-    public void unregisterServlet(HttpServlet servlet) {
-        servlet.destroy();
-        this.servletMap.remove(servlet.getServletPath());
-    }
-
-    public void registerFilter(Filter filter) {
-        filter.init();
-        this.filters.add(filter);
-    }
-
-    public void unregisterFilter(Filter filter) {
-        filter.destroy();
-        this.filters.remove(filter);
-    }
-
-    /**
-     * 세션 리스너를 등록합니다.
-     */
-    public void registerSessionListener(SessionListener listener) {
-        this.sessionManager.addSessionListener(listener);
-    }
-
-    /**
-     * 세션 리스너를 제거합니다.
-     */
-    public void unregisterSessionListener(SessionListener listener) {
-        this.sessionManager.removeSessionListener(listener);
-    }
-
-    /**
-     * 요청 리스너를 등록합니다.
-     */
-    public void registerRequestListener(RequestListener listener) {
-        this.httpRequestHandler.addRequestListener(listener);
-    }
-
-    /**
-     * 요청 리스너를 제거합니다.
-     */
-    public void unregisterRequestListener(RequestListener listener) {
-        this.httpRequestHandler.removeRequestListener(listener);
-    }
 
     @Override
     public void run() {
@@ -128,6 +85,44 @@ public class HttpServletContainer implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void registerServlet(HttpServlet servlet) {
+        servlet.init();
+        this.servletMap.put(servlet.getServletPath(), servlet);
+    }
+
+    public void unregisterServlet(HttpServlet servlet) {
+        servlet.destroy();
+        this.servletMap.remove(servlet.getServletPath());
+    }
+
+    public void registerFilter(Filter filter) {
+        filter.init();
+        this.filters.add(filter);
+    }
+
+    public void unregisterFilter(Filter filter) {
+        filter.destroy();
+        this.filters.remove(filter);
+    }
+
+    public void registerSessionListener(SessionListener listener) {
+        this.sessionManager.addSessionListener(listener);
+    }
+
+
+    public void unregisterSessionListener(SessionListener listener) {
+        this.sessionManager.removeSessionListener(listener);
+    }
+
+    public void registerRequestListener(RequestListener listener) {
+        this.httpRequestHandler.addRequestListener(listener);
+    }
+
+
+    public void unregisterRequestListener(RequestListener listener) {
+        this.httpRequestHandler.removeRequestListener(listener);
     }
 
     public HttpServletContainer() {
