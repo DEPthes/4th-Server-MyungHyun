@@ -6,5 +6,5 @@ import org.depth.servlet.ServletResponse;
 import java.net.Socket;
 
 public interface RequestHandler {
-    ServletResponse handle(Socket clientSocket);
+    void handle(Socket clientSocket);
 }

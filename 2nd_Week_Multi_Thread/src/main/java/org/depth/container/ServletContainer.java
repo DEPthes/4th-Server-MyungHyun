@@ -95,8 +95,10 @@ public class ServletContainer {
 
 
   private void handleRequest(Socket clientSocket) {
-    try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        OutputStream outputStream = clientSocket.getOutputStream()) {
+    try (
+            BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            OutputStream outputStream = clientSocket.getOutputStream()
+    ) {
 
       // HTTP 요청 파싱
       HttpServletRequest request = HttpRequestParser.parse(reader);
