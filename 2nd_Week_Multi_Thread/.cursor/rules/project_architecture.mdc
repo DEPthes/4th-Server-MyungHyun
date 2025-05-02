@@ -1,0 +1,61 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 프로젝트 구조 및 아키텍처 가이드
+
+이 프로젝트는 간단한 내장형 웹 서버 컨테이너를 구현합니다. 주요 코드는 `src/main/java/org/depth` 패키지 아래에 구성되어 있습니다.
+
+## 폴더 구조
+
+- `src/main/java/org/depth/`: 프로젝트의 루트 패키지
+    - `[Main.java](mdc:src/main/java/org/depth/Main.java)`: 애플리케이션의 시작점입니다. 컨테이너를 초기화하고 서블릿을 등록한 후 서버를 시작합니다.
+    - `[CustomServlet.java](mdc:src/main/java/org/depth/CustomServlet.java)`: 기본 경로(`/`)에 매핑되는 예제 서블릿입니다. GET 요청을 처리하고 응답을 생성합니다.
+    - `container/`: 웹 컨테이너와 관련된 구성 요소 포함
+        - `[HttpServletContainer.java](mdc:src/main/java/org/depth/container/HttpServletContainer.java)`: 핵심 컨테이너 클래스입니다. 클라이언트 연결을 관리하고 요청 처리를 스레드 풀에 위임합니다.
+        - `[PathRoutingServletMap.java](mdc:src/main/java/org/depth/container/PathRoutingServletMap.java)`: 요청 경로를 서블릿에 매핑하는 역할을 합니다.
+        - `container/filter/`: 요청/응답 필터링 관련 구성 요소 포함
+            - `[Filter.java](mdc:src/main/java/org/depth/container/filter/Filter.java)`: 필터 인터페이스 정의.
+            - `[FilterChain.java](mdc:src/main/java/org/depth/container/filter/FilterChain.java)`: 필터 체인을 관리하고 실행.
+        - `container/request/`: 요청 처리 관련 구성 요소 포함
+            - `[HttpRequestHandler.java](mdc:src/main/java/org/depth/container/request/HttpRequestHandler.java)`: 실제 HTTP 요청을 파싱하고 필터 및 서블릿 실행을 오케스트레이션.
+            - `[RequestHandler.java](mdc:src/main/java/org/depth/container/request/RequestHandler.java)`: 요청 핸들러 인터페이스 정의.
+    - `servlet/`: 서블릿 및 관련 인터페이스/클래스 포함
+        - `[Servlet.java](mdc:src/main/java/org/depth/servlet/Servlet.java)`: 기본 서블릿 인터페이스.
+        - `[ServletRequest.java](mdc:src/main/java/org/depth/servlet/ServletRequest.java)`: 기본 서블릿 요청 인터페이스.
+        - `[ServletResponse.java](mdc:src/main/java/org/depth/servlet/ServletResponse.java)`: 기본 서블릿 응답 인터페이스.
+        - `servlet/http/`: HTTP 특화 서블릿 관련 구성 요소 포함
+            - `[HttpServlet.java](mdc:src/main/java/org/depth/servlet/http/HttpServlet.java)`: HTTP 서블릿 추상 클래스.
+            - `[HttpServletRequest.java](mdc:src/main/java/org/depth/servlet/http/HttpServletRequest.java)`: HTTP 서블릿 요청 클래스.
+            - `[HttpServletResponse.java](mdc:src/main/java/org/depth/servlet/http/HttpServletResponse.java)`: HTTP 서블릿 응답 클래스.
+    - `http/`: HTTP 프로토콜 처리 관련 구성 요소 포함
+        - `[HttpRequest.java](mdc:src/main/java/org/depth/http/HttpRequest.java)`: HTTP 요청 데이터 구조.
+        - `[HttpResponse.java](mdc:src/main/java/org/depth/http/HttpResponse.java)`: HTTP 응답 데이터 구조.
+        - `http/exception/`: HTTP 관련 예외 클래스 포함
+            - `[HttpException.java](mdc:src/main/java/org/depth/http/exception/HttpException.java)`: HTTP 예외 기본 클래스.
+        - `http/handler/`: HTTP 메시지 처리 핸들러 포함
+            - `[HttpRequestParser.java](mdc:src/main/java/org/depth/http/handler/HttpRequestParser.java)`: HTTP 요청 파싱.
+            - `[HttpResponseWriter.java](mdc:src/main/java/org/depth/http/handler/HttpResponseWriter.java)`: HTTP 응답 생성 및 표준화.
+            - `[HttpRawMessageConverter.java](mdc:src/main/java/org/depth/http/handler/HttpRawMessageConverter.java)`: HTTP 메시지 객체를 문자열로 변환.
+        - `http/model/`: HTTP 관련 모델 클래스 포함
+            - `[HttpHeader.java](mdc:src/main/java/org/depth/http/model/HttpHeader.java)`: HTTP 헤더 정보 모델.
+
+## 아키텍처 개요
+
+이 프로젝트는 간단한 웹 컨테이너 패턴을 따릅니다. 주요 흐름은 다음과 같습니다.
+
+1.  `Main` 클래스에서 `HttpServletContainer`를 시작합니다.
+2.  컨테이너는 지정된 포트에서 클라이언트 연결을 기다립니다.
+3.  새로운 클라이언트 연결이 들어오면 스레드 풀의 `HttpRequestHandler`에게 처리를 위임합니다.
+4.  `HttpRequestHandler`는 클라이언트 소켓으로부터 HTTP 요청을 읽어 `HttpRequestParser`를 사용해 파싱하고 `HttpServletRequest` 객체를 생성합니다.
+5.  요청 경로를 기반으로 `PathRoutingServletMap`에서 적합한 `Servlet`을 찾습니다.
+6.  찾은 서블릿과 등록된 `Filter` 목록으로 `FilterChain`을 구성합니다.
+7.  `FilterChain`의 `doFilter` 메소드를 호출하여 필터들을 순차적으로 실행하고, 마지막에 대상 서블릿의 `service` 메소드를 실행합니다.
+8.  서블릿 실행 결과 생성된 `HttpServletResponse` 객체는 `HttpResponseWriter`를 통해 표준화되고 `HttpRawMessageConverter`를 통해 원시 HTTP 응답 문자열로 변환됩니다.
+9.  `HttpRequestHandler`는 최종 응답 문자열을 클라이언트 소켓에 작성하여 전송합니다.
+10. 서블릿을 찾지 못한 경우 `HttpRequestHandler`는 404 Not Found 응답을 생성합니다.
+
+이 구조는 확장성을 위해 필터와 서블릿 개념을 도입했으며, HTTP 파싱 및 응답 생성 로직을 분리하여 모듈성을 확보했습니다.
+
+

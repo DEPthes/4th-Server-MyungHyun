@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.depth.container.filter.Filter;
 import org.depth.container.filter.FilterChain;
 import org.depth.container.request.HttpRequestHandler;
+import org.depth.container.session.SessionManager;
 import org.depth.servlet.http.HttpServlet;
 
 import java.io.IOException;
@@ -21,6 +22,8 @@ public class HttpServletContainer implements Runnable {
     private final ExecutorService executorService;
     @Getter
     private final List<Filter> filters = new ArrayList<>();
+    @Getter
+    private final SessionManager sessionManager;
     private int port;
     private volatile boolean isRunning = false;
     private ServerSocket serverSocket;
@@ -47,13 +50,15 @@ public class HttpServletContainer implements Runnable {
 
     public HttpServletContainer() {
         this.servletMap = new PathRoutingServletMap();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters);
+        this.sessionManager = new SessionManager();
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
         this.executorService = java.util.concurrent.Executors.newFixedThreadPool(10);
     }
 
     public HttpServletContainer(ExecutorService executorService) {
         this.servletMap = new PathRoutingServletMap();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters);
+        this.sessionManager = new SessionManager();
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
         this.executorService = executorService;
     }
 
@@ -87,6 +92,7 @@ public class HttpServletContainer implements Runnable {
                 executorService.shutdownNow();
                 Thread.currentThread().interrupt();
             }
+            sessionManager.shutdown();
             System.out.println("Server stopped on port " + this.port);
         }
     }
