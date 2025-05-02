@@ -52,7 +52,6 @@ public class HttpServletContainer implements Runnable {
 
     /**
      * 세션 리스너를 등록합니다.
-     * @param listener 세션 리스너
      */
     public void registerSessionListener(SessionListener listener) {
         this.sessionManager.addSessionListener(listener);
@@ -60,7 +59,6 @@ public class HttpServletContainer implements Runnable {
 
     /**
      * 세션 리스너를 제거합니다.
-     * @param listener 세션 리스너
      */
     public void unregisterSessionListener(SessionListener listener) {
         this.sessionManager.removeSessionListener(listener);
@@ -68,7 +66,6 @@ public class HttpServletContainer implements Runnable {
 
     /**
      * 요청 리스너를 등록합니다.
-     * @param listener 요청 리스너
      */
     public void registerRequestListener(RequestListener listener) {
         this.httpRequestHandler.addRequestListener(listener);
@@ -76,24 +73,9 @@ public class HttpServletContainer implements Runnable {
 
     /**
      * 요청 리스너를 제거합니다.
-     * @param listener 요청 리스너
      */
     public void unregisterRequestListener(RequestListener listener) {
         this.httpRequestHandler.removeRequestListener(listener);
-    }
-
-    public HttpServletContainer() {
-        this.servletMap = new PathRoutingServletMap();
-        this.sessionManager = new SessionManager();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
-        this.executorService = java.util.concurrent.Executors.newFixedThreadPool(10);
-    }
-
-    public HttpServletContainer(ExecutorService executorService) {
-        this.servletMap = new PathRoutingServletMap();
-        this.sessionManager = new SessionManager();
-        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
-        this.executorService = executorService;
     }
 
     @Override
@@ -146,5 +128,19 @@ public class HttpServletContainer implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public HttpServletContainer() {
+        this.servletMap = new PathRoutingServletMap();
+        this.sessionManager = new SessionManager();
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
+        this.executorService = java.util.concurrent.Executors.newFixedThreadPool(10);
+    }
+
+    public HttpServletContainer(ExecutorService executorService) {
+        this.servletMap = new PathRoutingServletMap();
+        this.sessionManager = new SessionManager();
+        this.httpRequestHandler = new HttpRequestHandler(this.servletMap, this.filters, this.sessionManager);
+        this.executorService = executorService;
     }
 }

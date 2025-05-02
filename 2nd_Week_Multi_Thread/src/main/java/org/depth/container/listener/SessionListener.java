@@ -7,43 +7,18 @@ import org.depth.http.model.HttpSession;
  */
 public interface SessionListener {
     
-    /**
-     * 세션이 생성될 때 호출됩니다.
-     * 
-     * @param session 새로 생성된 세션
-     */
+    // 세션 생성 시 호출
     void sessionCreated(HttpSession session);
     
-    /**
-     * 세션이 활성화될 때 호출됩니다.
-     * 클라이언트가 세션 ID를 가진 쿠키로 요청할 때마다 호출됩니다.
-     * 
-     * @param session 활성화된 세션
-     */
+    // 세션 접근 시 호출
     void sessionAccessed(HttpSession session);
     
-    /**
-     * 세션이 무효화될 때 호출됩니다.
-     * 세션이 만료되거나 명시적으로 무효화될 때 호출됩니다.
-     * 
-     * @param session 무효화된 세션
-     */
+    // 세션 무효화 시 호출
     void sessionInvalidated(HttpSession session);
     
-    /**
-     * 세션 속성이 추가되거나 변경될 때 호출됩니다.
-     * 
-     * @param session 세션
-     * @param name 속성 이름
-     * @param value 속성 값
-     */
+    // 세션 속성 추가/변경 시 호출
     void attributeAdded(HttpSession session, String name, Object value);
     
-    /**
-     * 세션 속성이 제거될 때 호출됩니다.
-     * 
-     * @param session 세션
-     * @param name 속성 이름
-     */
+    // 세션 속성 제거 시 호출
     void attributeRemoved(HttpSession session, String name);
 } 

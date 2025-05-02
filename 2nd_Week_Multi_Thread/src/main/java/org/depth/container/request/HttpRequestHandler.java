@@ -34,22 +34,17 @@ public class HttpRequestHandler implements RequestHandler {
     // 세션 쿠키 이름
     private static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
-    /**
-     * 전역 요청 리스너를 등록합니다.
-     * @param listener 요청 리스너
-     */
+    // 요청 리스너 추가
     public void addRequestListener(RequestListener listener) {
         globalRequestListeners.add(listener);
     }
     
-    /**
-     * 전역 요청 리스너를 제거합니다.
-     * @param listener 요청 리스너
-     */
+    // 요청 리스너 제거
     public void removeRequestListener(RequestListener listener) {
         globalRequestListeners.remove(listener);
     }
 
+    // 클라이언트 요청 처리
     @Override
     public void handle(Socket clientSocket) {
         HttpServletRequest request = null;
@@ -106,11 +101,7 @@ public class HttpRequestHandler implements RequestHandler {
         }
     }
     
-    /**
-     * 요청의 쿠키를 확인하여 세션을 처리합니다.
-     * 세션이 없거나 만료된 경우 새 세션을 생성하고, 
-     * 세션 ID를 쿠키로 응답에 포함시킵니다.
-     */
+    // 세션 처리 로직
     private void processSession(HttpServletRequest request, HttpServletResponse response) {
         // 쿠키에서 세션 ID 추출
         String sessionId = extractSessionIdFromCookies(request);
@@ -134,11 +125,7 @@ public class HttpRequestHandler implements RequestHandler {
         request.setSession(session);
     }
     
-    /**
-     * 요청 헤더에서 세션 ID를 추출합니다.
-     * @param request HTTP 요청
-     * @return 세션 ID 또는 null
-     */
+    // 쿠키에서 세션 ID 추출
     private String extractSessionIdFromCookies(HttpServletRequest request) {
         Optional<HttpHeader> cookieHeader = request.getHeaders().stream()
                 .filter(header -> "Cookie".equalsIgnoreCase(header.getName()))

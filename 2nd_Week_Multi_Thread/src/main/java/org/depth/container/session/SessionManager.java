@@ -19,32 +19,23 @@ public class SessionManager {
     // 세션 클린업 주기 (기본 10분)
     private static final long CLEANUP_INTERVAL = 10;
     
+    // 세션 관리자 생성자
     public SessionManager() {
         // 주기적으로 만료된 세션을 정리하는 작업 시작
         startSessionCleanup();
     }
     
-    /**
-     * 전역 세션 리스너를 등록합니다.
-     * @param listener 세션 리스너
-     */
+    // 전역 세션 리스너 추가
     public void addSessionListener(SessionListener listener) {
         globalSessionListeners.add(listener);
     }
     
-    /**
-     * 전역 세션 리스너를 제거합니다.
-     * @param listener 세션 리스너
-     */
+    // 전역 세션 리스너 제거
     public void removeSessionListener(SessionListener listener) {
         globalSessionListeners.remove(listener);
     }
     
-    /**
-     * 세션 ID에 해당하는 세션을 가져옵니다. 만료된 세션은 null을 반환합니다.
-     * @param sessionId 세션 ID
-     * @return 세션 객체 (없거나 만료된 경우 null)
-     */
+    // 세션 ID로 세션 조회
     public HttpSession getSession(String sessionId) {
         if (sessionId == null) {
             return null;
@@ -67,10 +58,7 @@ public class SessionManager {
         return session;
     }
     
-    /**
-     * 새 세션을 생성합니다.
-     * @return 새로 생성된 세션
-     */
+    // 새 세션 생성
     public HttpSession createSession() {
         HttpSession session = new HttpSession();
         
@@ -87,10 +75,7 @@ public class SessionManager {
         return session;
     }
     
-    /**
-     * 특정 세션을 무효화합니다.
-     * @param sessionId 세션 ID
-     */
+    // 세션 무효화
     public void invalidateSession(String sessionId) {
         HttpSession session = sessions.remove(sessionId);
         if (session != null) {
@@ -98,9 +83,7 @@ public class SessionManager {
         }
     }
     
-    /**
-     * 주기적으로 만료된 세션을 정리하는 작업을 시작합니다.
-     */
+    // 만료된 세션 정리 작업 시작
     private void startSessionCleanup() {
         scheduler.scheduleAtFixedRate(() -> {
             sessions.entrySet().removeIf(entry -> {
@@ -113,9 +96,7 @@ public class SessionManager {
         }, CLEANUP_INTERVAL, CLEANUP_INTERVAL, TimeUnit.MINUTES);
     }
     
-    /**
-     * 세션 관리자를 종료합니다.
-     */
+    // 세션 관리자 종료
     public void shutdown() {
         scheduler.shutdown();
         try {
