@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.depth.container.filter.Filter;
 import org.depth.container.filter.FilterChain;
+import org.depth.container.listener.RequestListener;
+import org.depth.container.listener.SessionListener;
 import org.depth.container.request.HttpRequestHandler;
 import org.depth.container.session.SessionManager;
 import org.depth.servlet.http.HttpServlet;
@@ -46,6 +48,38 @@ public class HttpServletContainer implements Runnable {
     public void unregisterFilter(Filter filter) {
         filter.destroy();
         this.filters.remove(filter);
+    }
+
+    /**
+     * 세션 리스너를 등록합니다.
+     * @param listener 세션 리스너
+     */
+    public void registerSessionListener(SessionListener listener) {
+        this.sessionManager.addSessionListener(listener);
+    }
+
+    /**
+     * 세션 리스너를 제거합니다.
+     * @param listener 세션 리스너
+     */
+    public void unregisterSessionListener(SessionListener listener) {
+        this.sessionManager.removeSessionListener(listener);
+    }
+
+    /**
+     * 요청 리스너를 등록합니다.
+     * @param listener 요청 리스너
+     */
+    public void registerRequestListener(RequestListener listener) {
+        this.httpRequestHandler.addRequestListener(listener);
+    }
+
+    /**
+     * 요청 리스너를 제거합니다.
+     * @param listener 요청 리스너
+     */
+    public void unregisterRequestListener(RequestListener listener) {
+        this.httpRequestHandler.removeRequestListener(listener);
     }
 
     public HttpServletContainer() {

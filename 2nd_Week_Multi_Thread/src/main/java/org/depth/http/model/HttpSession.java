@@ -2,9 +2,12 @@ package org.depth.http.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.depth.container.listener.SessionListener;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,6 +20,9 @@ public class HttpSession {
     private Instant expireTime;
     
     private final Map<String, Object> attributes = new HashMap<>();
+    
+    // 세션 리스너 리스트
+    private List<SessionListener> listeners = new ArrayList<>();
     
     // 기본 세션 유효 시간: 30분
     private static final long DEFAULT_MAX_INACTIVE_INTERVAL = 30 * 60;
@@ -52,7 +58,12 @@ public class HttpSession {
      * @param value 속성 값
      */
     public void setAttribute(String name, Object value) {
-        attributes.put(name, value);
+        Object oldValue = attributes.put(name, value);
+        
+        // 속성이 새로 추가되거나 변경된 경우 리스너 알림
+        if (oldValue != value) {
+            notifyAttributeAdded(name, value);
+        }
     }
     
     /**
@@ -69,7 +80,10 @@ public class HttpSession {
      * @param name 속성 이름
      */
     public void removeAttribute(String name) {
-        attributes.remove(name);
+        if (attributes.containsKey(name)) {
+            attributes.remove(name);
+            notifyAttributeRemoved(name);
+        }
     }
     
     /**
@@ -85,5 +99,67 @@ public class HttpSession {
      */
     public void invalidate() {
         attributes.clear();
+        notifySessionInvalidated();
+    }
+    
+    /**
+     * 세션 리스너를 등록합니다.
+     * @param listener 세션 리스너
+     */
+    public void addSessionListener(SessionListener listener) {
+        listeners.add(listener);
+    }
+    
+    /**
+     * 세션 리스너를 제거합니다.
+     * @param listener 세션 리스너
+     */
+    public void removeSessionListener(SessionListener listener) {
+        listeners.remove(listener);
+    }
+    
+    /**
+     * 세션이 접근되었음을 리스너에게 알립니다.
+     */
+    public void notifySessionAccessed() {
+        for (SessionListener listener : listeners) {
+            listener.sessionAccessed(this);
+        }
+    }
+    
+    /**
+     * 세션이 생성되었음을 리스너에게 알립니다.
+     */
+    public void notifySessionCreated() {
+        for (SessionListener listener : listeners) {
+            listener.sessionCreated(this);
+        }
+    }
+    
+    /**
+     * 세션이 무효화되었음을 리스너에게 알립니다.
+     */
+    private void notifySessionInvalidated() {
+        for (SessionListener listener : listeners) {
+            listener.sessionInvalidated(this);
+        }
+    }
+    
+    /**
+     * 세션 속성이 추가되었음을 리스너에게 알립니다.
+     */
+    private void notifyAttributeAdded(String name, Object value) {
+        for (SessionListener listener : listeners) {
+            listener.attributeAdded(this, name, value);
+        }
+    }
+    
+    /**
+     * 세션 속성이 제거되었음을 리스너에게 알립니다.
+     */
+    private void notifyAttributeRemoved(String name) {
+        for (SessionListener listener : listeners) {
+            listener.attributeRemoved(this, name);
+        }
     }
 } 

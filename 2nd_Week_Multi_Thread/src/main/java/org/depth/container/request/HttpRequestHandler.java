@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.depth.container.PathRoutingServletMap;
 import org.depth.container.filter.Filter;
 import org.depth.container.filter.FilterChain;
+import org.depth.container.listener.RequestListener;
 import org.depth.container.session.SessionManager;
 import org.depth.http.HttpRequest;
 import org.depth.http.handler.HttpRequestParser;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,34 +29,79 @@ public class HttpRequestHandler implements RequestHandler {
     private final PathRoutingServletMap pathRoutingServletMap;
     private final List<Filter> filters;
     private final SessionManager sessionManager;
+    private final List<RequestListener> globalRequestListeners = new ArrayList<>();
     
     // 세션 쿠키 이름
     private static final String SESSION_COOKIE_NAME = "JSESSIONID";
 
+    /**
+     * 전역 요청 리스너를 등록합니다.
+     * @param listener 요청 리스너
+     */
+    public void addRequestListener(RequestListener listener) {
+        globalRequestListeners.add(listener);
+    }
+    
+    /**
+     * 전역 요청 리스너를 제거합니다.
+     * @param listener 요청 리스너
+     */
+    public void removeRequestListener(RequestListener listener) {
+        globalRequestListeners.remove(listener);
+    }
+
     @Override
     public void handle(Socket clientSocket) {
+        HttpServletRequest request = null;
+        HttpServletResponse response = null;
+        
         try (
                 BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 OutputStream outputStream = clientSocket.getOutputStream()
         ) {
-            HttpServletRequest request = HttpRequestParser.parse(reader);
-            HttpServletResponse response = HttpResponseWriter.createDefaultResponse();
+            request = HttpRequestParser.parse(reader);
+            response = HttpResponseWriter.createDefaultResponse();
+            
+            // 전역 요청 리스너 등록
+            for (RequestListener listener : globalRequestListeners) {
+                request.addRequestListener(listener);
+            }
             
             // 세션 처리
             processSession(request, response);
-
-            Servlet bestMatchingServlet = pathRoutingServletMap.findBestMatchingFor(request.getPath());
-
-            if (bestMatchingServlet != null) {
-                FilterChain filterChain = new FilterChain(filters, bestMatchingServlet);
-                filterChain.doFilter(request, response);
-            } else {
-                response = HttpResponseWriter.createNotFoundResponse(request.getPath());
+            
+            // 요청 초기화 이벤트 발생
+            boolean continueProcessing = request.notifyRequestInitialized(response);
+            
+            if (continueProcessing) {
+                try {
+                    Servlet bestMatchingServlet = pathRoutingServletMap.findBestMatchingFor(request.getPath());
+    
+                    if (bestMatchingServlet != null) {
+                        FilterChain filterChain = new FilterChain(filters, bestMatchingServlet);
+                        filterChain.doFilter(request, response);
+                    } else {
+                        response = HttpResponseWriter.createNotFoundResponse(request.getPath());
+                    }
+                } catch (Exception e) {
+                    // 오류 처리 이벤트 발생
+                    if (!request.notifyRequestError(response, e)) {
+                        // 오류가 처리되지 않은 경우 500 응답 생성
+                        response = HttpResponseWriter.createServerErrorResponse(e.getMessage());
+                    }
+                }
             }
+            
+            // 요청 완료 이벤트 발생
+            request.notifyRequestCompleted(response);
 
             outputStream.write(response.getContent());
             outputStream.flush();
         } catch (IOException e) {
+            // 요청 처리 중 예외가 발생하면 오류 이벤트 발생
+            if (request != null && response != null) {
+                request.notifyRequestError(response, e);
+            }
             throw new RuntimeException(e);
         }
     }

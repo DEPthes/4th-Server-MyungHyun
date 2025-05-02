@@ -1,7 +1,10 @@
 package org.depth.container.session;
 
+import org.depth.container.listener.SessionListener;
 import org.depth.http.model.HttpSession;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -11,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 public class SessionManager {
     private final Map<String, HttpSession> sessions = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+    private final List<SessionListener> globalSessionListeners = new ArrayList<>();
     
     // 세션 클린업 주기 (기본 10분)
     private static final long CLEANUP_INTERVAL = 10;
@@ -18,6 +22,22 @@ public class SessionManager {
     public SessionManager() {
         // 주기적으로 만료된 세션을 정리하는 작업 시작
         startSessionCleanup();
+    }
+    
+    /**
+     * 전역 세션 리스너를 등록합니다.
+     * @param listener 세션 리스너
+     */
+    public void addSessionListener(SessionListener listener) {
+        globalSessionListeners.add(listener);
+    }
+    
+    /**
+     * 전역 세션 리스너를 제거합니다.
+     * @param listener 세션 리스너
+     */
+    public void removeSessionListener(SessionListener listener) {
+        globalSessionListeners.remove(listener);
     }
     
     /**
@@ -34,11 +54,14 @@ public class SessionManager {
         
         if (session != null) {
             if (session.isExpired()) {
-                sessions.remove(sessionId);
+                invalidateSession(sessionId); // 만료된 세션 정리
                 return null;
             }
             // 세션 접근 시 만료 시간 갱신
             session.resetExpireTime();
+            
+            // 세션 접근 이벤트 알림
+            session.notifySessionAccessed();
         }
         
         return session;
@@ -50,7 +73,17 @@ public class SessionManager {
      */
     public HttpSession createSession() {
         HttpSession session = new HttpSession();
+        
+        // 전역 세션 리스너 등록
+        for (SessionListener listener : globalSessionListeners) {
+            session.addSessionListener(listener);
+        }
+        
         sessions.put(session.getId(), session);
+        
+        // 세션 생성 이벤트 알림
+        session.notifySessionCreated();
+        
         return session;
     }
     
@@ -70,7 +103,13 @@ public class SessionManager {
      */
     private void startSessionCleanup() {
         scheduler.scheduleAtFixedRate(() -> {
-            sessions.entrySet().removeIf(entry -> entry.getValue().isExpired());
+            sessions.entrySet().removeIf(entry -> {
+                boolean expired = entry.getValue().isExpired();
+                if (expired) {
+                    entry.getValue().invalidate(); // 세션 무효화 이벤트 발생
+                }
+                return expired;
+            });
         }, CLEANUP_INTERVAL, CLEANUP_INTERVAL, TimeUnit.MINUTES);
     }
     
@@ -87,6 +126,12 @@ public class SessionManager {
             scheduler.shutdownNow();
             Thread.currentThread().interrupt();
         }
+        
+        // 모든 세션 무효화
+        for (HttpSession session : sessions.values()) {
+            session.invalidate();
+        }
+        
         sessions.clear();
     }
 } 
