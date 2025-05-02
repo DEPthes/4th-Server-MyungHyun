@@ -1,6 +1,7 @@
 package org.depth;
 
 import org.depth.container.HttpServletContainer;
+import org.depth.container.listener.LoggingRequestListener;
 
 import java.io.IOException;
 
@@ -11,6 +12,8 @@ public class Main {
         HttpServletContainer container = new HttpServletContainer();
 
         CustomServlet servlet = new CustomServlet();
+
+        container.registerRequestListener(new LoggingRequestListener());
 
         container.registerServlet(servlet);
 
