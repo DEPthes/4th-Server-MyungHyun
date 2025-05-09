@@ -19,10 +19,14 @@ public class FilterChain {
         this.targetServlet = targetServlet;
     }
 
+
     public void doFilter(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        // 필터가 모두 실행된 경우 서블릿 실행
         if (currentFilterIndex < filters.size()) {
             Filter filter = filters.get(currentFilterIndex);
             currentFilterIndex++;
+
+            // 필터 초기화
             filter.doFilter(request, response, this);
         } else if (targetServlet != null) {
             try {
