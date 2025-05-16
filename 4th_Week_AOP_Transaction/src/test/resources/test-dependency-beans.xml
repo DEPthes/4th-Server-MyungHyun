@@ -1,0 +1,12 @@
+<beans>
+    <bean id="someOtherBeanForCircularTest" class="org.depth.beans.testbeans.TestBeanC"/>
+
+    <bean id="circularA" class="org.depth.beans.testbeans.CircularDepBeanA">
+        <constructor-arg ref="circularB"/>
+        <constructor-arg ref="someOtherBeanForCircularTest"/>
+    </bean>
+
+    <bean id="circularB" class="org.depth.beans.testbeans.CircularDepBeanB">
+        <constructor-arg ref="circularA"/>
+    </bean>
+</beans>

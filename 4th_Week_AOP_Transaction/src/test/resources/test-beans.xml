@@ -1,0 +1,25 @@
+<beans>
+    <bean id="noDepsBean" class="org.depth.beans.testbeans.TestBeanWithNoDeps">
+        <!-- 생성자 value 주입은 아직 미구현, 있다면 기본 생성자 후 setter로 테스트 -->
+        <!-- <constructor-arg value="beanWithNoDepsId"/> -->
+    </bean>
+
+    <bean id="testC" class="org.depth.beans.testbeans.TestBeanC">
+        <!-- 기본 생성자 사용 후 setter로 주입 테스트 -->
+    </bean>
+
+    <bean id="testCWithName" class="org.depth.beans.testbeans.TestBeanC">
+        <!-- <constructor-arg value="C From XML"/> --> <!-- value 주입 미구현 -->
+        <property name="name" value="C From XML Property"/> <!-- value 주입 미구현 -->
+    </bean>
+
+    <bean id="testB" class="org.depth.beans.testbeans.TestBeanB">
+        <constructor-arg ref="testC"/> <!-- testC 빈을 참조 -->
+    </bean>
+
+    <bean id="testA" class="org.depth.beans.testbeans.TestBeanA">
+        <constructor-arg ref="testB"/>
+        <property name="beanC" ref="testCWithName"/> <!-- testCWithName 빈을 setter로 주입 -->
+        <property name="message" value="Hello from XML"/> <!-- value 주입 미구현 -->
+    </bean>
+</beans>
