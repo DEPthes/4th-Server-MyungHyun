@@ -12,6 +12,7 @@ import org.depth.beans.factory.BeanFactory;
 import org.depth.beans.factory.ListableBeanFactory;
 import org.depth.beans.factory.config.BeanPostProcessor;
 import org.depth.beans.factory.exception.BeansException;
+import org.depth.transaction.TransactionManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +76,8 @@ public class AopProxyBeanPostProcessor implements BeanPostProcessor {
         return Advisor.class.isAssignableFrom(beanClass) ||
                 Pointcut.class.isAssignableFrom(beanClass) ||
                 AroundAdvice.class.isAssignableFrom(beanClass) ||
-                BeanPostProcessor.class.isAssignableFrom(beanClass);
+                BeanPostProcessor.class.isAssignableFrom(beanClass) ||
+                TransactionManager.class.isAssignableFrom(beanClass);
     }
 
     protected Object createProxy(Object targetBean, String beanName, List<Advisor> allAdvisorsForBean) {

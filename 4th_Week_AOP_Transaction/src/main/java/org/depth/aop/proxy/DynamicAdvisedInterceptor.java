@@ -34,8 +34,8 @@ public class DynamicAdvisedInterceptor implements MethodInterceptor {
 
         // 2. 적용할 Advice가 없다면, 원본 타겟 메서드 실행 (리플렉션 또는 methodProxy.invoke(target, args))
         if (chain.isEmpty()) {
-            // return methodProxy.invoke(this.target, args); // CGLIB MethodProxy 사용 가능
-            return method.invoke(this.target, args);      // 또는 직접 리플렉션 사용
+             return methodProxy.invoke(this.target, args); // CGLIB MethodProxy 사용 가능
+//            return method.invoke(this.target, args);      // 또는 직접 리플렉션 사용
         }
 
         // 3. MethodInvocation을 생성하고 Advice 체인 실행 시작

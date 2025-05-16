@@ -2,6 +2,7 @@ package org.depth.aop.invocation;
 
 import org.depth.aop.AroundAdvice;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -63,7 +64,11 @@ public class ReflectiveMethodInvocation implements MethodInvocation {
      * 타겟 객체의 원본 메서드를 리플렉션을 사용하여 호출합니다.
      */
     protected Object invokeJoinpoint() throws Throwable {
-        return this.method.invoke(this.target, this.arguments);
+        try {
+            return this.method.invoke(this.target, this.arguments);
+        } catch (InvocationTargetException e) {
+            throw e.getCause();
+        }
     }
 
 }
