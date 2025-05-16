@@ -43,8 +43,7 @@ public class AopProxyBeanPostProcessor implements BeanPostProcessor {
 
     protected List<Advisor> findApplicableAdvisors(Object bean, String beanName) {
         List<Advisor> candidates = new ArrayList<>();
-        if (beanFactory instanceof ListableBeanFactory) {
-            ListableBeanFactory lbf = (ListableBeanFactory) beanFactory;
+        if (beanFactory instanceof ListableBeanFactory lbf) {
             String[] advisorNames = lbf.getBeanDefinitionNames(); // 모든 빈 이름을 가져옴
             for (String name : advisorNames) {
                 BeanDefinition bd = lbf.getBeanDefinition(name);
@@ -68,7 +67,7 @@ public class AopProxyBeanPostProcessor implements BeanPostProcessor {
         // Pointcut 매칭
         Class<?> targetClass = bean.getClass();
         return candidates.stream()
-                .filter(advisor -> advisor.getPointcut().matches(targetClass)) // 클래스 레벨 매칭
+                .filter(advisor -> advisor.getPointcut().getClassMatcher().matches(targetClass))
                 .collect(Collectors.toList());
     }
 

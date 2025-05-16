@@ -63,11 +63,7 @@ public class ReflectiveMethodInvocation implements MethodInvocation {
      * 타겟 객체의 원본 메서드를 리플렉션을 사용하여 호출합니다.
      */
     protected Object invokeJoinpoint() throws Throwable {
-        // 접근성 처리 (필요한 경우)
-//         Method originalMethod = AopUtils.getMostSpecificMethod(this.method, this.targetClass);
-//         ReflectionUtils.makeAccessible(originalMethod);
-//         return originalMethod.invoke(this.target, this.arguments);
-        return this.method.invoke(this.target, this.arguments); // 간단하게 직접 호출
+        return this.method.invoke(this.target, this.arguments);
     }
 
 }

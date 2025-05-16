@@ -1,9 +1,22 @@
 package org.depth.aop;
 
-import java.lang.reflect.Method;
+import org.depth.aop.matcher.ClassMatcher;
+import org.depth.aop.matcher.MethodMatcher;
 
 public interface Pointcut {
-    boolean matches(Class<?> targetClass);
+    ClassMatcher getClassMatcher();
 
-    boolean matches(Method method, Class<?> targetClass);
+    MethodMatcher getMethodMatcher();
+
+    Pointcut TRUE = new Pointcut() {
+        @Override
+        public ClassMatcher getClassMatcher() {
+            return ClassMatcher.TRUE;
+        }
+
+        @Override
+        public MethodMatcher getMethodMatcher() {
+            return MethodMatcher.TRUE;
+        }
+    };
 }

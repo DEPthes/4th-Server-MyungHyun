@@ -28,7 +28,7 @@ public class DynamicAdvisedInterceptor implements MethodInterceptor {
 
         // 1. 현재 호출된 메서드에 적용될 AroundAdvice 목록을 필터링
         List<AroundAdvice> chain = this.advisors.stream()
-                .filter(advisor -> advisor.getPointcut().matches(method, targetClass))
+                .filter(advisor -> advisor.getPointcut().getMethodMatcher().matches(method, targetClass))
                 .map(Advisor::getAdvice) // Advisor가 AroundAdvice를 반환한다고 가정
                 .collect(Collectors.toList());
 
