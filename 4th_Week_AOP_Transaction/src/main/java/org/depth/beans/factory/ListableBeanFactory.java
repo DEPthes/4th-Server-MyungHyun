@@ -1,6 +1,7 @@
 package org.depth.beans.factory;
 
 import org.depth.beans.BeanDefinition;
+import org.depth.beans.factory.config.BeanPostProcessor;
 import org.depth.beans.factory.exception.BeanCreationException;
 import org.depth.beans.factory.exception.BeanInstantiationException;
 import org.depth.beans.factory.exception.BeansException;
@@ -10,12 +11,20 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ListableBeanFactory implements BeanFactory, BeanDefinitionRegistry {
     private final Map<String, BeanDefinition> beanDefinitions = new ConcurrentHashMap<>();
     private final Map<String, Object> singletonObjects = new ConcurrentHashMap<>();
-
     private final ThreadLocal<Set<String>> currentlyInCreation = ThreadLocal.withInitial(HashSet::new);
+    private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList<>();
+
+
+
+    public void addBeanPostProcessor(BeanPostProcessor beanPostProcessor) {
+        this.beanPostProcessors.remove(beanPostProcessor);
+        this.beanPostProcessors.add(beanPostProcessor);
+    }
 
     /**
      * 빈 인스턴스를 반환하는 메서드
@@ -63,44 +72,75 @@ public class ListableBeanFactory implements BeanFactory, BeanDefinitionRegistry 
     protected <T> T doGetBean(final String name, final Class<T> requiredType) throws BeansException {
         Object sharedInstance = singletonObjects.get(name);
 
-        if(sharedInstance != null) {
-            if(requiredType != null && !requiredType.isInstance(sharedInstance)) {
-                throw new BeanCreationException(name, "Bean is not of required type: " + requiredType.getName());
+        if (sharedInstance != null) {
+            // 이미 생성된 빈(프록시일 수 있음)이 타입과 맞는지 확인
+            if (requiredType != null && !requiredType.isInstance(sharedInstance)) {
+                throw new BeanCreationException(name, "Bean is not of required type: " + requiredType.getName() +
+                        ". Existing bean type: " + sharedInstance.getClass().getName());
             }
             return (T) sharedInstance;
         }
 
-        if(currentlyInCreation.get().contains(name)) {
+        if (currentlyInCreation.get().contains(name)) {
             throw new BeanCreationException(name,
                     "Circular dependency detected for bean '" + name + "'. Path: " +
                             String.join(" -> ", currentlyInCreation.get()) + " -> " + name);
         }
 
         final BeanDefinition bd = beanDefinitions.get(name);
-        if(bd == null) {
+        if (bd == null) {
             throw new NoSuchBeanDefinitionException(name);
         }
 
-        Object beanInstance = singletonObjects.computeIfAbsent(name, key -> {
-            currentlyInCreation.get().add(key);
-            try {
-                return createBean(name, bd);
-            }catch (BeansException e) {
-                throw e;
-            }catch(Exception e) {
-                throw new BeanCreationException(name, "Error creating bean", e);
-            }finally {
-                currentlyInCreation.get().remove(key);
-                if(currentlyInCreation.get().isEmpty()) {
-                    currentlyInCreation.remove();
-                }
-            }
-        });
+        currentlyInCreation.get().add(name);
+        Object beanInstance;
+        try {
+            Object createdBean = createBean(name, bd);
+            beanInstance = initializeBean(name, createdBean, bd);
+            singletonObjects.put(name, beanInstance);
 
-        if(requiredType != null && !requiredType.isInstance(beanInstance)) {
-            throw new BeanCreationException(name, "Bean is not of required type: " + requiredType.getName());
+        } catch (BeansException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new BeanCreationException(name, "Error creating bean", e);
+        } finally {
+            currentlyInCreation.get().remove(name);
+            if (currentlyInCreation.get().isEmpty()) {
+                currentlyInCreation.remove();
+            }
+        }
+
+        if (requiredType != null && !requiredType.isInstance(beanInstance)) {
+            throw new BeanCreationException(name, "Bean is not of required type: " + requiredType.getName() +
+                    ". Final bean type: " + beanInstance.getClass().getName());
         }
         return (T) beanInstance;
+    }
+
+    protected Object initializeBean(String beanName, Object bean, BeanDefinition bd) throws BeansException {
+        Object wrappedBean = bean;
+
+        // 1. postProcessBeforeInitialization 호출
+        for (BeanPostProcessor processor : this.beanPostProcessors) {
+            wrappedBean = processor.postProcessBeforeInitialization(wrappedBean, beanName);
+            if (wrappedBean == null) {
+                // 후처리기가 null을 반환하면, 더 이상 처리하지 않고 null을 반환 (Spring 참조)
+                return null;
+            }
+        }
+
+        // 2. 사용자 정의 초기화 메서드 호출 (예: InitializingBean 인터페이스 구현 또는 init-method 속성)
+        // invokeInitMethods(beanName, wrappedBean, bd); // (선택적 구현)
+
+        // 3. postProcessAfterInitialization 호출 (AOP 프록시 생성의 주요 지점)
+        for (BeanPostProcessor processor : this.beanPostProcessors) {
+            wrappedBean = processor.postProcessAfterInitialization(wrappedBean, beanName);
+            if (wrappedBean == null) {
+                return null;
+            }
+        }
+
+        return wrappedBean;
     }
 
     /**
