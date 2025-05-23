@@ -1,9 +1,8 @@
 package org.depth.web.servlet.http;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.depth.web.annotation.RequestMapping;
 import org.depth.web.http.HttpResponse;
 import org.depth.web.http.model.HttpHeader;
 import org.depth.web.servlet.ServletResponse;
@@ -12,10 +11,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
-@AllArgsConstructor
+@RequiredArgsConstructor
 @SuperBuilder
 @Data
 public class HttpServletResponse extends HttpResponse implements ServletResponse {
+    @Getter
+    @Setter
+    private boolean isCommitted = false;
+
     @Override
     public byte[] getContent() {
         return this.toRawResponse().getBytes(StandardCharsets.UTF_8);

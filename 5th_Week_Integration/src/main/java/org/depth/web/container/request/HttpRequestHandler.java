@@ -89,6 +89,8 @@ public class HttpRequestHandler implements RequestHandler {
             // 요청 완료 이벤트 발생
             request.notifyRequestCompleted(response);
 
+            response.setCommitted(true);
+
             outputStream.write(response.getContent());
             outputStream.flush();
         } catch (IOException e) {
