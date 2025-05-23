@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.depth'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    //assertj
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+
+
+    //lombok
+    compileOnly 'org.projectlombok:lombok:1.18.38'
+    annotationProcessor 'org.projectlombok:lombok:1.18.38'
+    //lombok for tests
+    testCompileOnly 'org.projectlombok:lombok:1.18.38'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+
+    //cglib
+    implementation 'cglib:cglib:3.3.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(Test) {
+    jvmArgs += [
+            '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+            // 필요시 다른 '--add-opens', '패키지=ALL-UNNAMED' 추가
+    ]
+}
