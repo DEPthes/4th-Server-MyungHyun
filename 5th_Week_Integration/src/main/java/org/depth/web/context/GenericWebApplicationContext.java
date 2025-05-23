@@ -8,7 +8,7 @@ import org.depth.beans.factory.context.GenericApplicationContext;
 import org.depth.web.servlet.Servlet;
 
 @NoArgsConstructor
-public class GenericWebApplicationContext extends GenericApplicationContext {
+public class GenericWebApplicationContext extends GenericApplicationContext implements WebApplicationContext {
     @Getter @Setter
     private Servlet servlet;
 
