@@ -25,6 +25,9 @@ dependencies {
 
     //cglib
     implementation 'cglib:cglib:3.3.0'
+
+    // https://mvnrepository.com/artifact/com.google.code.gson/gson
+    implementation("com.google.code.gson:gson:2.7")
 }
 
 test {
@@ -32,8 +35,7 @@ test {
 }
 
 tasks.withType(Test) {
-    jvmArgs += [
-            '--add-opens', 'java.base/java.lang=ALL-UNNAMED'
-            // 필요시 다른 '--add-opens', '패키지=ALL-UNNAMED' 추가
+    jvmArgs += ['--add-opens', 'java.base/java.lang=ALL-UNNAMED'
+                // 필요시 다른 '--add-opens', '패키지=ALL-UNNAMED' 추가
     ]
 }
