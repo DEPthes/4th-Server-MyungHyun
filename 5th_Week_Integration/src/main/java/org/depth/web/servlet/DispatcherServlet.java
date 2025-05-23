@@ -4,13 +4,10 @@ import com.google.gson.Gson;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.depth.beans.BeanDefinition;
-// import org.depth.beans.factory.ListableBeanFactory; // 더 이상 직접 사용하지 않음
-import org.depth.beans.factory.context.ApplicationContext;
 import org.depth.beans.factory.exception.BeansException;
-import org.depth.web.annotation.Controller; // @Controller 어노테이션
+import org.depth.web.annotation.Controller;
 import org.depth.web.annotation.RequestMapping;
 import org.depth.web.context.GenericWebApplicationContext;
-import org.depth.web.context.WebApplicationContext;
 import org.depth.web.http.handler.HttpResponseWriter;
 import org.depth.web.servlet.http.HttpServlet;
 import org.depth.web.servlet.http.HttpServletRequest;
@@ -40,10 +37,6 @@ public class DispatcherServlet extends HttpServlet {
      * 여기서 context는 GenericApplicationContext의 인스턴스라고 가정합니다.
      */
     protected void initHandlerMappings(GenericWebApplicationContext context) {
-        // context가 GenericApplicationContext 인스턴스라고 가정하므로,
-        // BeanDefinitionRegistry와 ApplicationContext(BeanFactory)의 메서드를 사용할 수 있습니다.
-        // GenericApplicationContext는 getBeanDefinitionNames(), getBeanDefinition(), getBean() 메서드를 제공합니다.
-
         String[] beanNames = context.getBeanDefinitionNames();
 
         for (String beanName : beanNames) {
