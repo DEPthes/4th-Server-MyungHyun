@@ -21,11 +21,11 @@ public class TransactionInterceptor implements AroundAdvice {
 
         Object result;
         try {
-            if (!existingTransaction) { //  PROPAGATION_REQUIRED 와 유사한 동작
+            if (!existingTransaction) {
                 this.transactionManager.begin();
             }
 
-            result = invocation.proceed(); // 실제 타겟 메서드 호출
+            result = invocation.proceed();
 
             if (!existingTransaction) {
                 this.transactionManager.commit();
@@ -36,7 +36,6 @@ public class TransactionInterceptor implements AroundAdvice {
                     this.transactionManager.rollback();
                 } catch (Exception rbEx) {
                     System.err.println("ERROR (Thread: " + Thread.currentThread().getName() + "): Transaction rollback failed: " + rbEx.getMessage());
-                    // 롤백 실패를 로깅하지만, 원래의 예외(ex)는 계속 전파되어야 합니다.
                 }
             }
             throw ex; // 원래의 예외를 다시 던짐

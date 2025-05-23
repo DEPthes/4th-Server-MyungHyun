@@ -8,9 +8,7 @@ public class DummyTransactionManager implements TransactionManager {
     @Override
     public void begin() {
         if (activeTransactionInThread.get()) {
-            // 간단한 예시로, 중첩 트랜잭션은 아직 지원하지 않는다고 가정하거나 로깅만 합니다.
             System.out.println("WARN (Thread: " + Thread.currentThread().getName() + "): Transaction is already active.");
-            // 실제 구현에서는 PROPAGATION_NESTED 등을 처리해야 합니다.
             return; // 또는 예외 발생
         }
         System.out.println("INFO (Thread: " + Thread.currentThread().getName() + "): [DummyTransactionManager] Beginning transaction.");

@@ -6,25 +6,25 @@ import org.depth.aop.matcher.MethodMatcher;
 
 public class DefaultPointcut implements Pointcut {
 
-    private ClassMatcher classMatcher;   // 변경됨
+    private ClassMatcher classMatcher;   
     private MethodMatcher methodMatcher;
 
     public DefaultPointcut() {
-        this.classMatcher = ClassMatcher.TRUE; // 변경됨
+        this.classMatcher = ClassMatcher.TRUE; 
         this.methodMatcher = MethodMatcher.TRUE;
     }
 
     public DefaultPointcut(MethodMatcher methodMatcher) {
-        this(ClassMatcher.TRUE, methodMatcher); // 변경됨
+        this(ClassMatcher.TRUE, methodMatcher); 
     }
 
-    public DefaultPointcut(ClassMatcher classMatcher, MethodMatcher methodMatcher) { // 변경됨
-        this.classMatcher = (classMatcher != null) ? classMatcher : ClassMatcher.TRUE; // 변경됨
+    public DefaultPointcut(ClassMatcher classMatcher, MethodMatcher methodMatcher) { 
+        this.classMatcher = (classMatcher != null) ? classMatcher : ClassMatcher.TRUE; 
         this.methodMatcher = (methodMatcher != null) ? methodMatcher : MethodMatcher.TRUE;
     }
 
-    public void setClassMatcher(ClassMatcher classMatcher) { // 변경됨
-        this.classMatcher = (classMatcher != null) ? classMatcher : ClassMatcher.TRUE; // 변경됨
+    public void setClassMatcher(ClassMatcher classMatcher) { 
+        this.classMatcher = (classMatcher != null) ? classMatcher : ClassMatcher.TRUE; 
     }
 
     public void setMethodMatcher(MethodMatcher methodMatcher) {
@@ -32,7 +32,7 @@ public class DefaultPointcut implements Pointcut {
     }
 
     @Override
-    public ClassMatcher getClassMatcher() { // 변경됨
+    public ClassMatcher getClassMatcher() { 
         return this.classMatcher;
     }
 
