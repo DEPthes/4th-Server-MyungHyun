@@ -1,4 +1,4 @@
-package com.depth.concurrency;
+package com.depth.project;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
