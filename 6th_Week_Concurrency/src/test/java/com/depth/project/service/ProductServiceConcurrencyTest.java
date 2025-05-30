@@ -70,7 +70,7 @@ public class ProductServiceConcurrencyTest {
       });
     }
 
-    latch.await(); // 모든 스레드가 종료될 때까지 대기
+    latch.await();
     executorService.shutdown();
 
     Product finalProduct = productRepository.findById(productId).orElseThrow();
@@ -78,8 +78,6 @@ public class ProductServiceConcurrencyTest {
     System.out.println("Final stock: " + finalProduct.getStock());
     System.out.println("OptimisticLockExceptions: " + optimisticLockExceptionsCount.get());
 
-    // 모든 요청이 성공하거나, 일부가 OptimisticLockException으로 실패해야 함
-    // 정확히 몇 개의 예외가 발생할지는 실행 환경과 타이밍에 따라 달라질 수 있음
     // 중요한 것은 재고가 음수가 되거나 예상치 못한 값으로 변경되지 않는 것과, 충돌이 감지되는 것을 확인하는 것.
     assertTrue(optimisticLockExceptionsCount.get() < numberOfThreads && optimisticLockExceptionsCount.get() >= 0);
     assertEquals(initialStock - (numberOfThreads - optimisticLockExceptionsCount.get()), finalProduct.getStock());
